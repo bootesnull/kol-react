@@ -12,9 +12,9 @@ const KolPromotingSlider = (features) => {
     slidesToShow: 1,
     slidesToScroll: 1,
   });
-  // console.log('features slider',features.features)
+
   const koldata = features.features;
-  //console.log('koldata132', koldata)
+  
   // _onReady(e) {
   //   e.target.pauseVideo();
   // }
@@ -79,7 +79,7 @@ const KolPromotingSlider = (features) => {
                       <div className="info py-2">
                         <i className="bi bi-geo-alt"></i>
                         <p>
-                          {console.log(item)}
+                          
                           {item?.Address?.address +
                             ", " +
                             item?.Address?.landmark +
@@ -125,7 +125,7 @@ const KolPromotingSlider = (features) => {
 
                 <div className="profile-profile-btn">
                   <div className="row">
-                    <div className="col-lg-12 text-center"><Link to={`/details/${item.profile_id}`} className="btn theme-btn px-4">View more</Link></div>
+                    {/* <div className="col-lg-12 text-center"><Link to={`/details/${item.profile_id}`} className="btn theme-btn px-4">View more</Link></div> */}
                   </div>
                 </div>
             </div>

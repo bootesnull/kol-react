@@ -36,7 +36,7 @@ const EmailVerify = () => {
     }
   }, [isSuccess, isError]);
 
-  console.log(email);
+
   const dispatch = useDispatch();
   //state for otp change
   const [otp, setOtp] = useState("");
@@ -50,20 +50,27 @@ const EmailVerify = () => {
     }
     dispatch(emailVerification({ otp, email })).then((data)=>{
   
-      if(data?.payload?.statusCode == 200){
+      if(data?.payload?.status){
         toast.success(data?.payload?.message)
+      }else{
+        toast.error(data?.payload?.message)
       }
-      toast.error(data?.payload?.message)
+      
    
     })
     e.target.reset();
   };
 
   const handleOtp = () => {
-    dispatch(resendEmailOtp(email));
+    dispatch(resendEmailOtp(email)).then((data)=>{
+      console.log(data);
+      if(data?.payload?.status){
+        toast.success(data?.payload?.message)
+      }
+    });
   };
 
-  console.log("otp", otp)
+
   
   return (
     <section className="otp-bg">
