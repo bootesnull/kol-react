@@ -3,6 +3,7 @@ import GoogleButton from "react-google-button";
 import "./Register.css";
 import { useDispatch, useSelector } from "react-redux";
 import { signInWithPopup } from "firebase/auth";
+import Loader from "react-js-loader";
 import { auth, googleAuthProvider } from "../../Firebase";
 //import { Container, Row, Col } from "react-bootstrap";
 import {
@@ -15,7 +16,8 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const Register = () => {
-  const { isFetching, isSuccess, statusCode, isError, errorMessage } = useSelector(userSelector);
+  const { isFetching, isSuccess, statusCode, isError, errorMessage } =
+    useSelector(userSelector);
   const role = useSelector((state) => state?.user?.role?.payload);
   //state for firebase values
   console.log(isSuccess, statusCode);
@@ -35,6 +37,16 @@ const Register = () => {
     password: "",
   });
   const [error, setError] = useState("");
+  const [fieldError, setfieldError] = useState({
+    name: "",
+    email: "",
+    password: "",
+  })
+
+  const [regPassword, setRegPassword] = useState("password");
+  const [eye, seteye] = useState(true);
+  const [type, settype] = useState(false);
+
   const [status, setStatus] = useState(false);
   let token = localStorage.getItem("token");
   console.log(token);
@@ -61,33 +73,77 @@ const Register = () => {
         console.log(err.message);
       });
   };
+
+  function isValidEmail(email) {
+    return /\S+@\S+\.\S+/.test(email);
+  }
+
   //function for handleChange
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData((prevState) => {
+       return { 
+        ...prevState,
+        [e.target.name]: e.target.value 
+        }
+      });
+      validateInput(e);
   };
+
+  const validateInput = (e) => {
+    let { name, value } = e.target;
+    setfieldError((prev) => {
+      const stateObj = { ...prev, [name]: "" };
+
+      switch (name) {
+        case "name":
+          if (!value) {
+            stateObj[name] = "Please enter name";
+          }
+          break;
+          case "email":
+            if (!value) {
+              stateObj[name] = "Please enter email id";
+            }else if (!isValidEmail(value)){
+                stateObj[name] = "Please enter correct email id";
+              }
+            break;
+          case "password":
+            if (!value) {
+              stateObj[name] = "Please enter password";
+            }else if (value.length < 8){
+              stateObj[name] = "Password must be atleast 8 characters";
+            }
+            break;
+        default:
+          break;
+      }
+
+      return stateObj;
+    });
+  };
+
+const[btnLoader,setBtnLoader] = useState(false);
   //function for handleSubmit
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (
-      formData.name == "" ||
-      formData.email == "" ||
-      token == "" ||
-      formData.password == "" ||
-      role == ""
-    ) {
-      setError("All fields required please select all field");
+    setBtnLoader(true)
+    if (formData.name == "" || formData.email == "" || formData.password == "") {
+      setError("Please fill the mandatory filed");
       setStatus(true);
+      setBtnLoader(false)
     } else {
-      console.log(formData);
-      dispatch(signupUser(formData)).then((data)=>{
+      dispatch(signupUser(formData)).then((data) => {
         console.log(data);
-        if(data.payload.status){
-          toast.success(data.payload.message)
+        if (data.payload.statusCode==201) {
+          toast.success(data.payload.message);
+          setBtnLoader(false)
+          localStorage.setItem("email", data.payload.email)
         }
-      })
+      });
       e.target.reset();
     }
   };
+  // console.log(error);
   //action for signInwithGoogle
   useEffect(() => {
     if (!firebaseUser.token) return;
@@ -125,7 +181,20 @@ const Register = () => {
       navigate("/home");
     }
   }, [token]);
-  console.log(status);
+
+
+  const Eye = () => {
+    if (regPassword == "password") {
+      setRegPassword("text");
+      seteye(false);
+      // settype(true);
+    } else {
+      setRegPassword("password");
+      seteye(true);
+      // settype(false);
+    }
+  };
+
   return (
     <div className="main-div">
       <section>
@@ -159,62 +228,85 @@ const Register = () => {
                           type="text"
                           name="name"
                           className={`form-control ${
-                             error === "" || formData.name
+                            error === "" || formData.name
                               ? ""
                               : "border-danger"
                           }`}
                           placeholder="First name"
                           onChange={handleChange}
+                          autoComplete="off"
                         />
-                        {error && formData.name == "" && (
-                          <span className="text-danger">{error}</span>
+                        <span className="err text-danger">
+                        {fieldError.name ||  error && formData.name == "" && (
+                          <>{error || fieldError.name}</>
                         )}
+                        </span>
                       </div>
 
                       <div className="form-group  mb-3">
                         <label>Email</label>
                         <span className="astric-span">*</span>
                         <input
-                          type="email"
+                          type="text"
                           name="email"
                           className={`form-control  ${
-                            error === "" || formData.email 
-                            ? ""
-                            : "border-danger"
+                            error === "" || formData.email
+                              ? ""
+                              : "border-danger"
                           }`}
                           placeholder="Enter email"
                           onChange={handleChange}
+                          autoComplete="off"
                         />
-                        {error && formData.email == "" && (
-                          <span className="text-danger">{error}</span>
+                        <span className="err text-danger">
+                        {fieldError.email || error && formData.email == "" && (
+                          <>{error || fieldError.email  }</>
                         )}
+                        </span>
+
                       </div>
 
                       <div className="form-group  mb-3">
                         <label>Password</label>
                         <span className="astric-span">*</span>
+                        <div className="position-relative">
                         <input
-                          type="password"
+                          type={regPassword}
                           name="password"
                           className={`form-control  ${
                             error === "" || formData.password
-                            ? ""
-                            : "border-danger"
+                              ? ""
+                              : "border-danger"
                           }`}
                           placeholder="Enter password"
                           onChange={handleChange}
+                          autoComplete="off"
                         />
-                        {error && formData.password == "" && (
-                          <span className="text-danger">{error}</span>
+                        <i
+                            onClick={Eye}
+                            className={`eye-icon fa ${
+                              eye ? "fa-eye-slash" : "fa-eye"
+                            }`}
+                          ></i>
+                         </div> 
+                         <span className="err text-danger">
+
+                          
+                        {fieldError.password || error && formData.password == "" && (
+                          <>{error || fieldError.password}</>
                         )}
+                        </span>
+
+
                       </div>
                       <div className="d-flex justify-content-between align-items-center mb-3">
                         <button
                           type="submit"
-                          className="btn theme-btn btn-lg btn-block"
+                          className="btn theme-btn btn-lg btn-block spiner-btn"
                         >
-                          Register
+                         {btnLoader ? <Loader type="spinner-cub"  title={"Register"} size={20} />:'Register'} 
                         </button>
+
                         <span className="optionText text-right">
                           Already registered <Link to="/login">Login</Link>
                         </span>

@@ -12,6 +12,7 @@ import {
 } from "../../slices/AuthSlice/AuthSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
+import Loader from "react-js-loader";
 import "react-toastify/dist/ReactToastify.css";
 import "./Login.css";
 const Login = () => {
@@ -23,6 +24,7 @@ const Login = () => {
   const [type, settype] = useState(false);
   const [error, setError] = useState("");
   const [status, setStatus] = useState(false);
+  const[btnLoader,setBtnLoader] = useState(false);
   const [loginData, setLoginData] = useState({
     email: "",
     password: "",
@@ -46,28 +48,84 @@ const Login = () => {
   }, []);
   const [password, setpassword] = useState("password");
 
+  const [fieldError, setfieldError] = useState({
+    name: "",
+    email: "",
+  });
+
+  function isValidEmail(email) {
+    return /\S+@\S+\.\S+/.test(email);
+  }
+
   const handleChange = (e) => {
-    
-    setLoginData({ ...loginData, [e.target.name]: e.target.value });
+    setLoginData((prevState)=>{
+       return {
+        ...prevState,
+        [e.target.name]: e.target.value 
+       }
+      });
+      validateInput(e);
   };
+
+
+  const validateInput = (e) => {
+    let { name, value } = e.target;
+    setfieldError((prev) => {
+      const stateObj = { ...prev, [name]: "" };
+
+      switch (name) {
+        case "email":
+          if (!value) {
+            stateObj[name] = "Please enter email id";
+          }else if (!isValidEmail(value)){
+            stateObj[name] = "Please enter correct email id";
+          }
+          break;
+          case "password":
+            if (!value) {
+              stateObj[name] = "Please enter password";
+            }
+            break;
+        default:
+          break;
+      }
+
+      return stateObj;
+    });
+  };
+
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    setBtnLoader(true)
     if (loginData.email == "" || loginData.password == "") {
-      setError("All fields required please select all field");
+      setError("Please fill the mandatory filed");
       setStatus(true);
+      setBtnLoader(false)
     }else{
       dispatch(LoginUser(loginData)).then((data) => {
         console.log(data);
         if (data?.payload?.data?.token) {
           navigate("/home");
           toast.success(data?.payload?.message);
-        } else {
+          setBtnLoader(false)
+        } else if(data.payload.statusCode === 401){
+          navigate('/emailVerify')
+          //localStorage.setItem("email",loginData.email)
+          toast.success(data?.payload?.message);
+          setBtnLoader(false)
+        }else{
           toast.error(data?.payload?.message);
+          setBtnLoader(false)
         }
       });
+   
     }
-
     e.target.reset();
+    return () => {
+      dispatch(clearState());
+    };
+   
   };
 
   const Eye = () => {
@@ -104,6 +162,9 @@ const Login = () => {
         navigate("/home");
       }
     });
+    return () => {
+      dispatch(clearState());
+    };
   }, [firebaseUser.token]);
 
   return (
@@ -135,7 +196,7 @@ const Login = () => {
                         <label>Email</label>
                         <span className="astric-span">*</span>
                         <input
-                          type="email"
+                          type="text"
                           id="form2Example17"
                           className={`form-control ${
                             error === "" || loginData.email
@@ -146,9 +207,12 @@ const Login = () => {
                           name="email"
                           onChange={handleChange}
                         />
-                        {error && loginData.email == "" && (
-                          <span className="text-danger">{error}</span>
+                        <span className="err text-danger">
+                        {fieldError.email || error && loginData.email == "" && (
+                          <>{error || fieldError.email}</>
                         )}
+                        </span>
+                        
                       </div>
 
                       <div className="form-group mb-3">
@@ -174,17 +238,19 @@ const Login = () => {
                               eye ? "fa-eye-slash" : "fa-eye"
                             }`}
                           ></i>
-                          {error && loginData.password == "" && (
-                          <span className="text-danger">{error}</span>
+                          <span className="err text-danger">
+                          {fieldError.password || error && loginData.password == "" && (
+                          <>{error || fieldError.password}</>
                         )}
+                        </span>
                         </div>
                       </div>
                       <div className="d-flex justify-content-between align-items-center mb-3">
                         <button
                           type="submit"
-                          className="btn theme-btn btn-lg btn-block"
+                          className="btn theme-btn btn-lg btn-block spiner-btn"
                         >
-                          Login
+                          {btnLoader ? <Loader type="spinner-cub"  title={"Login"} size={20} />:'Login'}
                         </button>
                         <span className="optionText1 text-right">
                           <Link to="/emailCheck">Forgot password ?</Link>

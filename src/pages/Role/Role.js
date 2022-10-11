@@ -9,8 +9,9 @@ import { toast } from "react-toastify";
 const Role = () => {
   // const email = useSelector((state) => state?.user?.loginUser?.data?.email);
   // const token = useSelector((state) => state?.user?.loginUser?.data?.token);
-  const { isFetching, isSuccess, statusCode, isError, errorMessage, email } =
-    useSelector(userSelector);
+  // const { isFetching, isSuccess, statusCode, isError, errorMessage, email } =
+  //   useSelector(userSelector);
+  let email = localStorage.getItem("email")
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [renderButton, setRenderButton] = useState("");
@@ -26,33 +27,35 @@ const Role = () => {
     }
   };
 
+  console.log("--------", email)
   useEffect(() => {
     if (token) {
       navigate("/home");
     }
   }, [token]);
-  console.log(role, email);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!role) {
       toast.error("Please select role first");
-    } else {
-      if (role && email) {
-        dispatch(updateRole({ role, email })).then((data) => {
-          toast.error(data.payload.msg);
-        });
+      } else if (role && email) {
+        // dispatch(updateRole({ role, email })).then((data) => {
+        //   toast.error(data.payload.msg);
+        // });
+        // alert(typeof email)
       } else {
         dispatch(addRole(role));
         navigate("/register");
       }
-    }
   };
 
   return (
     <section className="main">
       <div className="container d-flex flex-wrap justify-content-center">
         <div className="row full-width">
-          <Link to="/" className="col-12 mb-4 logo-text">KOL</Link>
+          <Link to="/" className="col-12 mb-4 logo-text">
+            KOL
+          </Link>
         </div>
 
         <div className="row full-width justify-content-center">

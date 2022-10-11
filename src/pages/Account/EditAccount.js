@@ -98,9 +98,9 @@ const EditAccount = () => {
         <div className="card">
           <div className="card-body">
             <div className="col-lg-12 px-4">
-              <div className="row justify-content-between p-md-5 list-row">
+              <div className="row justify-content-between p-md-5">
                 <div className="col-xl-3 col-lg-3 col-12 py-2 align-self-start text-center">
-                  <div className="kol-user-img">
+                  <div className="kol-profile-img">
                     <img
                       src={`${imageUrl}${userData.avatar}`}
                       className="img-fluid"
