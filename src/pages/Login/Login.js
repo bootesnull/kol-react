@@ -18,13 +18,13 @@ import "./Login.css";
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isFetching, isSuccess, statusCode, isError, errorMessage } =
-    useSelector(userSelector);
+  // const { isFetching, isSuccess, statusCode, isError, errorMessage } =
+  //   useSelector(userSelector);
   const [eye, seteye] = useState(true);
   const [type, settype] = useState(false);
   const [error, setError] = useState("");
   const [status, setStatus] = useState(false);
-  const[btnLoader,setBtnLoader] = useState(false);
+  const [btnLoader, setBtnLoader] = useState(false);
   const [loginData, setLoginData] = useState({
     email: "",
     password: "",
@@ -41,11 +41,11 @@ const Login = () => {
     };
   }, []);
 
-  useEffect(() => {
-    if (errorMessage == "Please choose roles!") {
-      navigate("/role");
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (errorMessage == "Please choose roles!") {
+  //     navigate("/role");
+  //   }
+  // }, []);
   const [password, setpassword] = useState("password");
 
   const [fieldError, setfieldError] = useState({
@@ -54,19 +54,18 @@ const Login = () => {
   });
 
   function isValidEmail(email) {
-    return /\S+@\S+\.\S+/.test(email);
+    return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email);
   }
 
   const handleChange = (e) => {
-    setLoginData((prevState)=>{
-       return {
+    setLoginData((prevState) => {
+      return {
         ...prevState,
-        [e.target.name]: e.target.value 
-       }
-      });
-      validateInput(e);
+        [e.target.name]: e.target.value,
+      };
+    });
+    validateInput(e);
   };
-
 
   const validateInput = (e) => {
     let { name, value } = e.target;
@@ -76,16 +75,16 @@ const Login = () => {
       switch (name) {
         case "email":
           if (!value) {
-            stateObj[name] = "Please enter email id";
-          }else if (!isValidEmail(value)){
-            stateObj[name] = "Please enter correct email id";
+            stateObj[name] = "Please enter email";
+          } else if (!isValidEmail(value)) {
+            stateObj[name] = "Please enter correct email";
           }
           break;
-          case "password":
-            if (!value) {
-              stateObj[name] = "Please enter password";
-            }
-            break;
+        case "password":
+          if (!value) {
+            stateObj[name] = "Please enter password";
+          }
+          break;
         default:
           break;
       }
@@ -94,38 +93,39 @@ const Login = () => {
     });
   };
 
-
   const handleSubmit = (e) => {
     e.preventDefault();
-    setBtnLoader(true)
+    setBtnLoader(true);
+    if (fieldError.email.length > 0 || fieldError.password.length > 0) {
+      setBtnLoader(false);
+      return;
+    }
     if (loginData.email == "" || loginData.password == "") {
       setError("Please fill the mandatory filed");
       setStatus(true);
-      setBtnLoader(false)
-    }else{
+      setBtnLoader(false);
+    } else {
       dispatch(LoginUser(loginData)).then((data) => {
         console.log(data);
         if (data?.payload?.data?.token) {
           navigate("/home");
           toast.success(data?.payload?.message);
-          setBtnLoader(false)
-        } else if(data.payload.statusCode === 401){
-          navigate('/emailVerify')
+          setBtnLoader(false);
+        } else if (data.payload.statusCode === 401) {
+          navigate("/emailVerify");
           //localStorage.setItem("email",loginData.email)
           toast.success(data?.payload?.message);
-          setBtnLoader(false)
-        }else{
+          setBtnLoader(false);
+        } else {
           toast.error(data?.payload?.message);
-          setBtnLoader(false)
+          setBtnLoader(false);
         }
       });
-   
     }
     e.target.reset();
     return () => {
       dispatch(clearState());
     };
-   
   };
 
   const Eye = () => {
@@ -157,10 +157,18 @@ const Login = () => {
   useEffect(() => {
     if (!firebaseUser.token) return;
     dispatch(loginWithGoogle(firebaseUser)).then((data) => {
-      if (data?.payload?.data?.token) {
-        toast.success(data.payload.message);
-        navigate("/home");
+      console.log(data);
+      if (data.payload.statusCode === 201) {
+        if (data.payload.data.token) {
+          navigate("/home");
+        } else {
+          navigate("/role");
+        }
       }
+      // if (data?.payload?.data?.token) {
+      //   toast.success(data.payload.message);
+      //   navigate("/home");
+      // }
     });
     return () => {
       dispatch(clearState());
@@ -169,8 +177,8 @@ const Login = () => {
 
   return (
     <div className="main-div">
-      <section>
-        <div className="container">
+      <section className="container d-flex flex-wrap justify-content-center align-items-center">
+        <div className=" login-container">
           <div className="card login-card">
             <div className="card-body login-card-body">
               <div className="row">
@@ -200,19 +208,20 @@ const Login = () => {
                           id="form2Example17"
                           className={`form-control ${
                             error === "" || loginData.email
-                             ? ""
-                             : "border-danger"
-                         }`}
+                              ? ""
+                              : "border-danger"
+                          }`}
                           placeholder="Enter email"
                           name="email"
                           onChange={handleChange}
+                          // autoComplete="off"
                         />
                         <span className="err text-danger">
-                        {fieldError.email || error && loginData.email == "" && (
-                          <>{error || fieldError.email}</>
-                        )}
+                          {fieldError.email ||
+                            (error && loginData.email == "" && (
+                              <>{error || fieldError.email}</>
+                            ))}
                         </span>
-                        
                       </div>
 
                       <div className="form-group mb-3">
@@ -224,12 +233,13 @@ const Login = () => {
                             id="form2Example27"
                             className={`form-control ${
                               error === "" || loginData.password
-                               ? ""
-                               : "border-danger"
-                           }`}
+                                ? ""
+                                : "border-danger"
+                            }`}
                             placeholder="Enter password"
                             name="password"
                             onChange={handleChange}
+                            autoComplete="off"
                           />
 
                           <i
@@ -239,10 +249,11 @@ const Login = () => {
                             }`}
                           ></i>
                           <span className="err text-danger">
-                          {fieldError.password || error && loginData.password == "" && (
-                          <>{error || fieldError.password}</>
-                        )}
-                        </span>
+                            {fieldError.password ||
+                              (error && loginData.password == "" && (
+                                <>{error || fieldError.password}</>
+                              ))}
+                          </span>
                         </div>
                       </div>
                       <div className="d-flex justify-content-between align-items-center mb-3">
@@ -250,7 +261,15 @@ const Login = () => {
                           type="submit"
                           className="btn theme-btn btn-lg btn-block spiner-btn"
                         >
-                          {btnLoader ? <Loader type="spinner-cub"  title={"Login"} size={20} />:'Login'}
+                          {btnLoader ? (
+                            <Loader
+                              type="spinner-cub"
+                              title={"Login"}
+                              size={20}
+                            />
+                          ) : (
+                            "Login"
+                          )}
                         </button>
                         <span className="optionText1 text-right">
                           <Link to="/emailCheck">Forgot password ?</Link>
@@ -271,8 +290,7 @@ const Login = () => {
                     </div>
                     <div className="col-12 d-flex justify-content-center align-items-center mt-3">
                       <span className="optionText text-center">
-                        Don't have an account?{" "}
-                        <Link to="/role">Sign Up</Link>
+                        Don't have an account? <Link to="/role">Sign Up</Link>
                       </span>
                     </div>
                   </div>

@@ -678,6 +678,7 @@ ul.kol-count-list {
 .send-btn{
   margin:0 auto;
   padding:.375rem 1.25rem;
+  font-size: 1.25rem;
 }
 .why-choose {
   padding: 2rem 3rem;
@@ -860,3 +861,4 @@ h1.banner-title:first-child::nth-line(-n+2){
 .spiner-btn .sl-spinner1 { flex-direction: row; align-items: flex-start; }
 .spiner-btn .sl-spinner1 .sl-loader { width: 28px; height: 28px; margin-top: -5px; }
 .spiner-btn .sl-spinner1 .sl-loader-title { font-weight: 500; font-size: 1.25rem;  line-height: 1.5;}
+

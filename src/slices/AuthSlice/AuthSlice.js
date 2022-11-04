@@ -234,13 +234,13 @@ export const LoginUser = createAsyncThunk(
       });
       let data = await response.json();
       console.log(data);
-      if (data.statusCode === 200) {
+      if (data) {
         if (data?.data?.token) {
           localStorage.setItem("token", data.data.token);
           localStorage.setItem("role", data.data.role_id);
           //localStorage.setItem("email", data.data.email);
         }
-        return { ...data };
+        return data ;
       } else { 
         return thunkAPI.rejectWithValue(data);
       }
@@ -409,6 +409,45 @@ export const UpdateProfileImage = createAsyncThunk(
   }
 );
 
+
+
+
+//API Integration of landing page help form
+export const createHelpForm = createAsyncThunk(
+  "help-form",
+  async ({email, first_name, last_name, mobile, messsage }, thunkAPI) => {
+   //console.log(email, first_name, last_name, mobile, messsage)
+    try {
+      const response = await fetch(`${API}/dashboard/contactUs`, {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          email, 
+          first_name, 
+          last_name, 
+          mobile, 
+          messsage,
+        }),
+      });
+      let data = await response.json();
+      //console.log(data);
+      if (response.statusCode === 201) {
+        return data;
+      } else {
+        return thunkAPI.rejectWithValue(data);
+      }
+    } catch (e) {
+      console.log("Error", e.response.data);
+      return thunkAPI.rejectWithValue(e.response.data);
+    }
+  }
+);
+
+
 //create slice for authentication reducers
 
 const authReducer = createSlice({
@@ -423,7 +462,7 @@ const authReducer = createSlice({
       state.isError = false;
       state.isSuccess = false;
       state.isFetching = false;
-      state.email = ""
+      // state.email = ""
       return state;
     },
   },
@@ -532,7 +571,17 @@ const authReducer = createSlice({
     },
     [UpdateUserProfile.fulfilled]:(state,action) =>{
       state.isSuccess = true
-    }
+    },
+
+    [createHelpForm.fulfilled]: (state, action) => {
+      return {  ...action.payload };
+    },
+    [createHelpForm.pending]: (state, action) => {
+      return {  ...action.payload };
+    },
+    [createHelpForm.rejected]: (state, action) => {
+      return {  ...action.payload };
+    },
   },
 });
 export const { addRole, clearState } = authReducer.actions;
