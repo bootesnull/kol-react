@@ -36,6 +36,8 @@ const KolListing = () => {
   // console.log(kolType);
   const navigate = useNavigate();
 
+  const [loaderData, setLoaderData] = useState(false);
+
   const [languages, setLanguages] = useState({});
   const [language, setLanguage] = useState("");
   const [stream, setStream] = useState("");
@@ -98,6 +100,7 @@ console.log("fsgdffffff",result);
   useEffect(() => {
     setKolName(name);
     setFreshposts([]);
+    setDataLoad(true)
   }, [name]);
   useEffect(() => {
     setKolCategory(kolType);
@@ -152,7 +155,9 @@ console.log("fsgdffffff",result);
       dispatch(kolDeleteBookmark({ profileId, token }));
     }
   };
-//console.log(dataLoad);
+console.log(dataLoad);
+
+
   return (
     <>
       <div className="row justify-content-between border-bottom pt-3 pb-4">
@@ -210,13 +215,12 @@ console.log("fsgdffffff",result);
           </p>
         }
       >
-        {dataLoad ?  ( <Loader type="spinner-cub"  title={"Loading"}  bgColor="#342951" color="#342951" size={100} /> ):
+        {dataLoad ?  ( <Loader type="spinner-cub"  title={"Loading"}  bgColor="#342951" color="#342951" size={36} /> ):
        
        
        (freshposts.length > 0 ? (
             freshposts.map((item, index) => {
               //console.log("--------",item)
-
               return (
                 <div
                   key={index}
@@ -225,7 +229,7 @@ console.log("fsgdffffff",result);
                   <div className="col-lg-3 py-2">
                     <div className="kol-user-img">
                       <Link to={`/details/${item.profile_id}`}>
-                        <img src={`${imageUrl}${item.avatar}`} />
+                        { item?.avatar ? (<img src={`${imageUrl}${item?.avatar}`} alt="Avatar" />) : "Avatar"}
                       </Link>
                     </div>
                   </div>
@@ -335,11 +339,13 @@ console.log("fsgdffffff",result);
             })
           ) : (
             <>
-              <div className="col-12 text-center p-5 bg-light my-3 ">
-                <h2 className="p-5">Nothing Found, try Searching again.</h2>
-              </div>
-            </>
-          ))
+            <div className="col-12 text-center p-5 bg-light my-3 ">
+              <h2 className="p-5">Nothing Found, try Searching again.</h2>
+            </div>
+          </>
+          )
+         
+          )
       }
 
       </InfiniteScroll>

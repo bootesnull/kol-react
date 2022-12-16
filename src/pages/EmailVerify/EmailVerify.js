@@ -18,8 +18,8 @@ const EmailVerify = () => {
   const navigate = useNavigate();
   const { isFetching, isSuccess, isError, errorMessage,email} = useSelector(userSelector);
   // const userData = useSelector((state) => state?.user?.registerUser?.data);
-  // let email = localStorage.getItem("email")
-  console.log(email);
+  //let emails = localStorage.setItem("email")
+  // console.log(email);
   const userdata = useSelector((state) => state?.user?.loginUser);
   useEffect(() => {
     return () => {
@@ -29,19 +29,22 @@ const EmailVerify = () => {
   const dispatch = useDispatch();
   //state for otp change
   const [otp, setOtp] = useState("");
+  const [emailId, setEmailId] = useState(email);
   //function for otp change
   const [error,setError] = useState("")
   const [btnLoader, setBtnLoader] = useState(false);
 
+ // console.log("ggggggggg",emailId);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setBtnLoader(true)
-    console.log("otp", otp)
+    console.log("otp, email", otp, emailId)
     if(otp.length < 6 ){
       setError("Please fill the mandatory filed")
       setBtnLoader(false)
     }
-    dispatch(emailVerification({ otp, email })).then((data)=>{
+    dispatch(emailVerification({ otp, emailId })).then((data)=>{
       if(data?.payload?.statusCode == 200){
         navigate('/home');
         toast.success(data?.payload?.message)
@@ -49,6 +52,7 @@ const EmailVerify = () => {
       }else{
         toast.error(data?.payload?.message)
         setBtnLoader(false)
+        e.target.reset();
       }
       
    
@@ -58,7 +62,7 @@ const EmailVerify = () => {
 
   const handleOtp = () => {
     
-    dispatch(resendEmailOtp(email)).then((data)=>{
+    dispatch(resendEmailOtp(emailId)).then((data)=>{
       console.log(data);
       if(data?.payload?.statusCode == 200){
         toast.success(data?.payload?.message)
@@ -87,7 +91,7 @@ useEffect(()=>{
 
                     <p className="">
                       We have just sent a verification code to<br />
-                      <span className="email-verify-name">{email}</span>
+                      <span className="email-verify-name">{emailId}</span>
                     </p>
 
                     <form onSubmit={handleSubmit}>
@@ -117,6 +121,7 @@ useEffect(()=>{
                         type="submit"
                         className="resend-button"
                         onClick={handleOtp}
+                        disabled={btnLoader?true:false}
                       >
                          {btnLoader ? <Loader type="spinner-cub"  title={"RESEND OTP"} size={20} />:'RESEND OTP'} 
                       </button>
